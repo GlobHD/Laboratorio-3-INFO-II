@@ -1,4 +1,4 @@
-#include <stdio.h>       
+#include <stdio.h>       //bibliotecas que recomendo gemini, algunas no se usan en este commit pero se dejan para futuros commits
 #include <stdlib.h>    
 #include <unistd.h>
 #include <sys/types.h>  
@@ -14,10 +14,10 @@
 /*
  * Laboratorio III.1 - COMMIT 1: Estructura de procesos y lectura de archivos
  * Autores: Agustin Iñiguez, Javier Eberle
- * Repositorio GitHub: 
+ * Repositorio GitHub: https://github.com/GlobHD/Laboratorio-3-INFO-II.git
  */
 
-/* Prototipos obligatorios de la guía de laboratorio */
+/* Prototipos del laboratorio */
 void credito(char *archivo_montos, int p[]);
 void debito(char *archivo_montos, int p[]);
 
@@ -26,70 +26,69 @@ int main()
   pid_t pid;
   int status, i;
 
-  /* Temporal: pasamos un array dummy ya que no usamos pipes en este commit */
-  int pipe_dummy[2] = {-1, -1}; 
+  /* es para probar, pipe tonto */
+  int pipe_dummy[2] = {-1, -1}; // arreglo de enteros que no se usa en este commit, pero se deja como parte de la estructura para javo
 
-  printf("Padre: PID %d\n", getpid());
+  printf("Padre: PID %d\n", getpid());//pido el id
   printf("[PADRE]: Creando procesos hijos...\n\n");
 
-  /* * Estructura de la cátedra: Un solo bucle para crear ambos hijos.
-   * i = 0 creará al hijo de Crédito.
+  /* i = 0 creará al hijo de Crédito.
    * i = 1 creará al hijo de Débito.
    */
   for(i = 0; i < 2; ++i)
   {
-    pid = fork();
+    pid = fork();// guardo el valo de la variable pid para cada proceso, el padre tendrá el PID del hijo y el hijo tendrá 0
     
     if(pid == -1)
     {
-      perror("No se puede crear el proceso hijo");
+      perror("No se puede crear el proceso hijo");//mensaje de error
       exit(-1);
     }
 
     if(pid == 0)
     {
-      /* Si es el proceso hijo, según el índice ejecuta una tarea u otra */
+      // Si es el proceso hijo, ejecuta una tarea u otra 
       if(i == 0)
       {
-        credito("credito.txt", pipe_dummy); [cite: 10, 31]
+        credito("credito.txt", pipe_dummy); // ejecuta la función de crédito, le paso el nombre del archivo de crédito y el pipe TONTO, luego se va a cambiar a un pipe real
       }
       else
       {
-        debito("debito.txt", pipe_dummy); [cite: 10, 30]
+        debito("debito.txt", pipe_dummy); 
       }
       
-      /* * El break rompe el bucle 'for' para que el hijo no siga ejecutando 
-       * los ciclos del padre ni cree más procesos. Luego termina con exit().
+      /* * El break rompe el bucle para que el hijo no siga ejecutando 
+       * los ciclos del padre ni cree más procesos. Luego termina con exit() , abajo lo hace
        */
       break; 
     }
     else
     {
-      printf("Nuevo proceso hijo creado: PID %d\n", pid);
+      printf("Nuevo proceso hijo creado: PID %d\n", pid);//esto seria para el padre, el hijo no entra acá porque tiene pid = 0, entonces el padre va a imprimir el PID de cada hijo que se crea
     }
   }
 
-  /* --- CÓDIGO DEL HIJO AL ROMPER EL BUCLE --- */
+  // --- CÓDIGO DEL HIJO PARA SALIR --- 
   if(pid == 0)
   {
-    /* Los hijos finalizan de manera limpia con exit() según la guía */ [cite: 38]
+    // me aseguro de que lo hijos no continuen ejecutando codigo del padre
     exit(0); 
   }
 
-  /* --- CÓDIGO EXCLUSIVO DEL PADRE --- */
+  // --- CÓDIGO DEL PADRE --- 
   printf("\n[PADRE]: Esperando que los hijos procesen los archivos...\n\n");
 
-  /* Otro bucle dedicado únicamente a esperar que terminen los 2 hijos */
-  for(i = 0; i < 2; ++i)
+  //Mientras se ejecutan los hijos el padre espera que terminen, con nwait espera a que cualquier hijo termine, devuelve el PID del hijo que terminó y el estado de salida del hijo, el padre hace esto dos veces porque tiene dos hijos, entonces espera a que ambos terminen
+    for(i = 0; i < 2; ++i)//uno por cada hijo
   {
-    pid_t pid_terminado = wait(&status);
+    pid_t pid_terminado = wait(&status);//
     
     if(pid_terminado > 0)
     {
       if(WIFEXITED(status) != 0)
       {
         printf("[PADRE]: Finalizó el proceso hijo con PID %d (Estado de salida: %d)\n", 
-               pid_terminado, WEXITSTATUS(status));
+               pid_terminado, WEXITSTATUS(statusHijo));
       }
     }
   }
@@ -103,9 +102,10 @@ int main()
 // Funciones que ejecuta cada proceso hijo
 //----------------------------------------------
 
-void credito(char *archivo_montos, int p[]) [cite: 31]
+void credito(char *archivo_montos, int p[]) //funcion que ejecuta el hijo de crédito, recibe el nombre del archivo de montos y
+// un arreglo de enteros (que no se usa en esta función, pero se deja como parte de la estructura para futuros commits)
 {
-  FILE *file = fopen(archivo_montos, "r"); [cite: 33]
+  FILE *file = fopen(archivo_montos, "r"); 
   if(!file)
   {
     perror("Hijo Crédito: Error al abrir archivo");
@@ -128,9 +128,9 @@ void credito(char *archivo_montos, int p[]) [cite: 31]
   printf("\tFinaliza hijo CRÉDITO: PID %d - Archivo completamente leído\n", getpid());
 }
 
-void debito(char *archivo_montos, int p[]) [cite: 30]
+void debito(char *archivo_montos, int p[]) 
 {
-  FILE *file = fopen(archivo_montos, "r"); [cite: 33]
+  FILE *file = fopen(archivo_montos, "r"); 
   if(!file)
   {
     perror("Hijo Débito: Error al abrir archivo");
